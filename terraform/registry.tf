@@ -8,7 +8,8 @@ variable "service_names" {
     "booking",
     "search",
     "notification",
-    "api-gateway"
+    "api-gateway",
+    "frontend"
   ]
 }
 
