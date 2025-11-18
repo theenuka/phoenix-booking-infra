@@ -1,0 +1,1 @@
+kubeadm join 10.0.1.236:6443 --token sb2stt.18cp3ni10wba7do8 --discovery-token-ca-cert-hash sha256:02f921db892999b372185e9ec5402b4f64178fb521ea8d6a93d855da92fb5c6a 

@@ -1,0 +1,14 @@
+- hosts: all
+  become: yes
+  roles:
+    - common
+
+- hosts: tag_Role_master  # <--- Notice this! We use the AWS Tag, not an IP!
+  become: yes
+  roles:
+    - master
+
+- hosts: tag_Role_worker  # <--- Notice this! Auto-groups workers!
+  become: yes
+  roles:
+    - workers
