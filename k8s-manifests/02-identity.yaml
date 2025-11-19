@@ -13,11 +13,14 @@ spec:
       labels:
         app: identity-service
     spec:
+      # This tells Kubernetes to use the secret key we created to log into ECR
+      imagePullSecrets:
+      - name: ecr-registry-secret
+
       containers:
       - name: identity-service
-        # REPLACE THIS URL BELOW with your real ECR URL for identity!
-        # Example: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-identity-service:latest
-        image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-identity-service
+        # Your ECR URL with the tag :latest
+        image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-identity-service:latest
         ports:
         - containerPort: 3000
         env:
