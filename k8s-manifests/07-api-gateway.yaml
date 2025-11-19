@@ -20,6 +20,9 @@ spec:
         image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-api-gateway-service
         ports:
         - containerPort: 7008
+        envFrom:
+        - configMapRef:
+            name: asgardeo-config
         env:
         - name: IDENTITY_SERVICE_URL
           value: "http://identity-service"

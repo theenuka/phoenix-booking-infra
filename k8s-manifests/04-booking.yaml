@@ -20,6 +20,9 @@ spec:
         image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-booking-service
         ports:
         - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: asgardeo-config
         env:
         - name: MONGODB_CONNECTION_STRING
           value: "mongodb://mongodb:27017/hotel-booking"
