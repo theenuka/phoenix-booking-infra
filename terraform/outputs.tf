@@ -17,3 +17,7 @@ output "master_ip" {
 output "worker_ips" {
   value = aws_instance.k8s_worker[*].public_ip
 }
+
+output "load_balancer_dns" {
+  value = aws_lb.main.dns_name
+}
