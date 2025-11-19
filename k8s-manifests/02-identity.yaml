@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+  namespace: phoenix-app
+spec:
+  replicas: 1  # We start with 1, can scale later
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      containers:
+      - name: identity-service
+        # REPLACE THIS URL BELOW with your real ECR URL for identity!
+        # Example: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-identity-service:latest
+        image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-identity-service
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGODB_CONNECTION_STRING
+          value: "mongodb://mongodb:27017/hotel-booking"
+        - name: JWT_SECRET_KEY
+          value: "my-super-secret-key-change-this-later"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  namespace: phoenix-app
+spec:
+  selector:
+    app: identity-service
+  ports:
+  - port: 80    # Inside the cluster, we talk to port 80
+    targetPort: 3000 # The container listens on 3000
