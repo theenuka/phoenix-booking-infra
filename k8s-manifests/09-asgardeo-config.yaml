@@ -11,8 +11,10 @@ data:
   ASGARDEO_JWKS_URL: "https://api.asgardeo.io/t/theenukagranex/oauth2/jwks"
   runtime-config.js: |
     (function () {
+      console.log("Runtime config loading...");
       const origin = (window.location && window.location.origin) || "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com";
       const normalizedOrigin = origin.replace(/\/+$/, "");
+      console.log("Detected origin:", normalizedOrigin);
 
       window.__ASGARDEO_CONFIG = {
         signInRedirectURL: normalizedOrigin + "/sign-in",
@@ -22,4 +24,5 @@ data:
         scope: ["openid", "profile", "email"],
         apiBaseUrl: normalizedOrigin
       };
+      console.log("Runtime config set:", window.__ASGARDEO_CONFIG);
     })();
