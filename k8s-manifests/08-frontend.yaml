@@ -17,7 +17,7 @@ spec:
       - name: ecr-registry-secret
       containers:
       - name: frontend
-        image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-frontend-service:asgardeo-runtime-fix-20251119
+        image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-frontend-service:asgardeo-runtime-fix-20251120
         ports:
         - containerPort: 4173   # <--- CHANGED FROM 80
         volumeMounts:
