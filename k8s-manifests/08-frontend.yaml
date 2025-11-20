@@ -20,6 +20,17 @@ spec:
         image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-frontend-service:asgardeo-runtime-fix-20251119
         ports:
         - containerPort: 4173   # <--- CHANGED FROM 80
+        volumeMounts:
+        - name: asgardeo-runtime-config
+          mountPath: /usr/share/nginx/html/runtime-config.js
+          subPath: runtime-config.js
+      volumes:
+      - name: asgardeo-runtime-config
+        configMap:
+          name: asgardeo-config
+          items:
+          - key: runtime-config.js
+            path: runtime-config.js
 ---
 apiVersion: v1
 kind: Service
