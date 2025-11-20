@@ -10,10 +10,15 @@ data:
   ASGARDEO_ISSUER: "https://api.asgardeo.io/t/theenukagranex/oauth2/token"
   ASGARDEO_JWKS_URL: "https://api.asgardeo.io/t/theenukagranex/oauth2/jwks"
   runtime-config.js: |
-    window.__ASGARDEO_CONFIG = {
-      signInRedirectURL: "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com/sign-in",
-      signOutRedirectURL: "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com/",
-      clientID: "iYcA_MO8LwTND_hvunAg8VvBHDua",
-      baseUrl: "https://api.asgardeo.io/t/theenukagranex",
-      scope: ["openid", "profile", "email"]
-    };
+    (function () {
+      const origin = (window.location && window.location.origin) || "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com";
+      const normalizedOrigin = origin.replace(/\/+$/, "");
+
+      window.__ASGARDEO_CONFIG = {
+        signInRedirectURL: normalizedOrigin + "/sign-in",
+        signOutRedirectURL: normalizedOrigin + "/",
+        clientID: "iYcA_MO8LwTND_hvunAg8VvBHDua",
+        baseUrl: "https://api.asgardeo.io/t/theenukagranex",
+        scope: ["openid", "profile", "email"]
+      };
+    })();
