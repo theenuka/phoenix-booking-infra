@@ -19,6 +19,7 @@ data:
         signOutRedirectURL: normalizedOrigin + "/",
         clientID: "iYcA_MO8LwTND_hvunAg8VvBHDua",
         baseUrl: "https://api.asgardeo.io/t/theenukagranex",
-        scope: ["openid", "profile", "email"]
+        scope: ["openid", "profile", "email"],
+        apiBaseUrl: normalizedOrigin
       };
     })();
