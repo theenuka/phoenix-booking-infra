@@ -21,7 +21,7 @@ spec:
       - name: identity-service
         image: 787169320414.dkr.ecr.us-east-1.amazonaws.com/phoenix-identity-service:asgardeo-distfix-20251120
         ports:
-        - containerPort: 3000
+        - containerPort: 7102
         envFrom:
         - configMapRef:
             name: asgardeo-config
@@ -30,6 +30,18 @@ spec:
           value: "mongodb://mongodb:27017/hotel-booking"
         - name: JWT_SECRET_KEY
           value: "my-super-secret-key-change-this-later"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  namespace: phoenix-app
+spec:
+  selector:
+    app: identity-service
+  ports:
+  - port: 80    # Inside the cluster, we talk to port 80
+    targetPort: 7102 # The container listens on 7102
 ---
 apiVersion: v1
 kind: Service
