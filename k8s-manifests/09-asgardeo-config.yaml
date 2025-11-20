@@ -11,18 +11,18 @@ data:
   ASGARDEO_JWKS_URL: "https://api.asgardeo.io/t/theenukagranex/oauth2/jwks"
   runtime-config.js: |
     (function () {
-      console.log("Runtime config loading...");
-      const origin = (window.location && window.location.origin) || "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com";
-      const normalizedOrigin = origin.replace(/\/+$/, "");
-      console.log("Detected origin:", normalizedOrigin);
+      console.log("Runtime config loading (Hardcoded)...");
+      
+      // Hardcoded for stability
+      const fixedOrigin = "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com";
 
       window.__ASGARDEO_CONFIG = {
-        signInRedirectURL: normalizedOrigin + "/sign-in",
-        signOutRedirectURL: normalizedOrigin + "/",
+        signInRedirectURL: fixedOrigin + "/sign-in",
+        signOutRedirectURL: fixedOrigin + "/",
         clientID: "iYcA_MO8LwTND_hvunAg8VvBHDua",
         baseUrl: "https://api.asgardeo.io/t/theenukagranex",
         scope: ["openid", "profile", "email"],
-        apiBaseUrl: normalizedOrigin
+        apiBaseUrl: fixedOrigin
       };
       console.log("Runtime config set:", window.__ASGARDEO_CONFIG);
     })();
