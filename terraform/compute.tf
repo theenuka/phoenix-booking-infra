@@ -17,12 +17,13 @@ data "aws_ami" "ubuntu" {
 # 1. The Master Node
 resource "aws_instance" "k8s_master" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.medium"
+  instance_type = "t3.large"
 
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.k8s_sg.id]
   associate_public_ip_address = true
   key_name                    = "phoenix-k8s-key"
+  iam_instance_profile        = aws_iam_instance_profile.k8s_profile.name
 
   root_block_device {
     volume_size = 20 # GB
@@ -38,12 +39,13 @@ resource "aws_instance" "k8s_master" {
 resource "aws_instance" "k8s_worker" {
   count         = 2                           # <-- MAGIC NUMBER: Creates 2 identical servers
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.medium"
+  instance_type = "t3.large"
 
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.k8s_sg.id]
   associate_public_ip_address = true
   key_name                    = "phoenix-k8s-key"
+  iam_instance_profile        = aws_iam_instance_profile.k8s_profile.name
 
   root_block_device {
     volume_size = 20 # GB

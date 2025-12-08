@@ -3,7 +3,10 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${var.project_name}-vpc" }
+  tags = {
+    Name = "${var.project_name}-vpc"
+    "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+  }
 }
 
 # 2. Internet Gateway
@@ -18,7 +21,11 @@ resource "aws_subnet" "public" {
   cidr_block              = var.subnet_cidr
   map_public_ip_on_launch = true
   availability_zone       = "${var.aws_region}a"
-  tags = { Name = "${var.project_name}-public-subnet" }
+  tags = {
+    Name = "${var.project_name}-public-subnet"
+    "kubernetes.io/role/elb" = "1"
+    "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+  }
 }
 
 # 4. Route Table
@@ -45,7 +52,12 @@ resource "aws_subnet" "public_2" {
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = true
   availability_zone       = "${var.aws_region}b" # Different Zone (us-east-1b)
-  tags = { Name = "${var.project_name}-public-subnet-2" }
+
+  tags = {
+    Name = "${var.project_name}-public-subnet-2"
+    "kubernetes.io/role/elb" = "1"
+    "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+  }
 }
 
 # Route Table Association for the new subnet
