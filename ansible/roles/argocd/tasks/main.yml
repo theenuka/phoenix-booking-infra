@@ -78,6 +78,9 @@
 - name: Apply ArgoCD Ingress
   shell: kubectl apply -f /tmp/argocd-ingress.yaml
 
+- name: Delete old app-of-apps application
+  shell: kubectl delete application.argoproj.io -n argocd app-of-apps --ignore-not-found
+
 - name: Create App of Apps Manifest
   copy:
     dest: /tmp/app-of-apps.yaml
