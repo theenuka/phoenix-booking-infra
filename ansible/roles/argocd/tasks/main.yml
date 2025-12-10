@@ -21,9 +21,6 @@
 - name: Wait for ArgoCD server to be ready
   shell: kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
 
-- name: Patch ArgoCD Server to LoadBalancer
-  shell: |
-    kubectl patch svc argocd-server -n argocd -p '{"metadata": {"annotations": {"service.beta.kubernetes.io/aws-load-balancer-type": "nlb"}}, "spec": {"type": "LoadBalancer"}}'
 
 - name: Install python3-pip
   apt:
@@ -47,6 +44,39 @@
 
 - name: Delete Initial Admin Secret
   shell: kubectl -n argocd delete secret argocd-initial-admin-secret --ignore-not-found
+
+- name: Create ArgoCD Ingress Manifest
+  copy:
+    dest: /tmp/argocd-ingress.yaml
+    content: |
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: argocd-server-ingress
+        namespace: argocd
+        annotations:
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+          alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+      spec:
+        ingressClassName: alb
+        rules:
+          - http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: argocd-server
+                      port:
+                        number: 80
+        tls:
+        - hosts:
+          - k8s-argocd-argocdse-f4b1608958-507457971.us-east-1.elb.amazonaws.com
+          secretName: argocd-server-tls
+- name: Apply ArgoCD Ingress
+  shell: kubectl apply -f /tmp/argocd-ingress.yaml
 
 - name: Create App of Apps Manifest
   copy:
