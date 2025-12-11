@@ -1,6 +1,0 @@
----
-# defaults file for argocd
-argocd_tls_cert: ""
-argocd_tls_key: ""
-argocd_ingress_host: "k8s-argocd-argocdse-f4b1608958-507457971.us-east-1.elb.amazonaws.com"
-argocd_config_repo_url: "https://github.com/theenuka/pheonix-booking-config-repo.git"

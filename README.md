@@ -15,9 +15,11 @@ This repository contains the Infrastructure as Code (IaC) for provisioning the K
     *   `vpc.tf`: Sets up the VPC and networking.
 *   **`ansible/`**: Contains Ansible playbooks and roles for configuring the provisioned EC2 instances.
     *   `aws_ec2.yml`: Dynamic inventory file for discovering EC2 instances based on tags.
-    *   `site.yaml`: Main playbook orchestrating the setup of common packages, Kubernetes master, workers, and ArgoCD.
-    *   `roles/`: Individual Ansible roles (e.g., `common`, `master`, `workers`, `argocd`).
-*   **`k8s/`**: Contains Kubernetes manifests used by Ansible roles (e.g., Flannel CNI, ArgoCD installation).
+    *   `site.yaml`: Main playbook orchestrating the setup of common packages, Kubernetes master, and workers.
+    *   `roles/`: Individual Ansible roles (e.g., `common`, `master`, `workers`).
+*   **`k8s/`**: Contains Kubernetes manifests used by Ansible roles (e.g., Flannel CNI).
+*   **`docs/`**: Contains architecture and design documents.
+    *   `HA_PROPOSAL.md`: A proposal for a High-Availability Kubernetes control plane.
 
 ## Usage
 
@@ -28,7 +30,7 @@ This repository contains the Infrastructure as Code (IaC) for provisioning the K
 *   Ansible installed locally.
 *   `kubectl` installed locally.
 
-### Provisioning Infrastructure
+### 1. Provisioning Infrastructure with Terraform
 
 1.  **Initialize Terraform**:
     ```bash
@@ -45,7 +47,7 @@ This repository contains the Infrastructure as Code (IaC) for provisioning the K
     ```
     This will provision the EC2 instances. Ensure the `Role` tags are correctly applied to the master and worker instances.
 
-### Configuring Kubernetes with Ansible
+### 2. Configuring Kubernetes with Ansible
 
 1.  **Navigate to Ansible Directory**:
     ```bash
@@ -55,12 +57,30 @@ This repository contains the Infrastructure as Code (IaC) for provisioning the K
     ```bash
     ansible-playbook -i aws_ec2.yml site.yaml
     ```
-    This will configure the EC2 instances, set up the Kubernetes cluster using `kubeadm`, and install ArgoCD with its Image Updater.
+    This will configure the EC2 instances and set up the Kubernetes cluster using `kubeadm`.
+
+### 3. Bootstrapping the Cluster with ArgoCD (GitOps)
+
+After the Kubernetes cluster is up and running, the final step is to bootstrap it with ArgoCD and deploy the applications using a GitOps approach.
+
+1.  **Install ArgoCD:**
+    ```bash
+    kubectl create namespace argocd
+    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    ```
+2.  **Apply the Root App:**
+    Clone the `pheonix-booking-config-repo` repository and apply the `root-app.yaml`:
+    ```bash
+    git clone https://github.com/theenuka/pheonix-booking-config-repo.git
+    kubectl apply -f pheonix-booking-config-repo/root-app.yaml
+    ```
+    This will instruct ArgoCD to deploy all the platform services and applications defined in the `pheonix-booking-config-repo`.
 
 ## Important Notes
 
-*   **Security**: Ensure your SSH key (`~/.ssh/phoenix-k8s-key.pem` as configured in `aws_ec2.yml`) has appropriate permissions and is secured.
-*   **ArgoCD**: After provisioning, access ArgoCD using the configured ingress hostname. The initial password can be retrieved from the `argocd-initial-admin-secret` in the `argocd` namespace.
-*   **kubectl access**: Copy the `admin.conf` from the master node to your local machine (`~/.kube/config`) to access the cluster using `kubectl`.
+*   **Security**: Ensure your SSH key has appropriate permissions and is secured.
+*   **ArgoCD Access**: After provisioning, access ArgoCD using the configured ingress hostname. The initial password can be retrieved from the `argocd-initial-admin-secret` in the `argocd` namespace.
+*   **kubectl Access**: Copy the `admin.conf` from the master node to your local machine (`~/.kube/config`) to access the cluster using `kubectl`.
+*   **High Availability**: The current setup uses a single master node. For production use, a high-availability control plane is recommended. See `docs/HA_PROPOSAL.md` for more details.
 
 This `README.md` provides an overview. Refer to the specific Terraform and Ansible files for detailed configurations.

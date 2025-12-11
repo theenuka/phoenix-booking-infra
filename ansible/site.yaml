@@ -13,8 +13,3 @@
   become: yes
   roles:
     - workers
-
-- hosts: tag_Role_master
-  become: yes
-  roles:
-    - argocd
