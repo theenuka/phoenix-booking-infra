@@ -38,8 +38,10 @@
 - name: Configure Containerd
   shell: |
     mkdir -p /etc/containerd
-    containerd config default | tee /etc/containerd/config.toml
+    containerd config default > /etc/containerd/config.toml
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+    echo '[plugins."io.containerd.grpc.v1.cri".registry.mirrors."k8s-istioing-phoenixa-873394dda6-1066746258.us-east-1.elb.amazonaws.com"]' >> /etc/containerd/config.toml
+    echo '  endpoint = ["http://k8s-istioing-phoenixa-873394dda6-1066746258.us-east-1.elb.amazonaws.com"]' >> /etc/containerd/config.toml
     systemctl restart containerd
 
 - name: Install Prerequisites
