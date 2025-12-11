@@ -1,75 +1,70 @@
 ---
-- name: Ensure .kube directory exists for root
-  file:
-    path: /root/.kube
-    state: directory
-    mode: 0755
-
-- name: Copy admin.conf to root's kube config
-  copy:
-    src: /etc/kubernetes/admin.conf
-    dest: /root/.kube/config
-    remote_src: yes
-    mode: 0600
-
 - name: Create argocd namespace
-  shell: kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+  kubernetes.core.k8s:
+    name: argocd
+    api_version: v1
+    kind: Namespace
+    state: present
 
 - name: Install ArgoCD
-  shell: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  kubernetes.core.k8s:
+    src: "{{ role_path }}/../../../k8s/argocd-install.yaml"
+    state: present
+    namespace: argocd
+
+- name: Install Argo CD Image Updater
+  kubernetes.core.k8s:
+    src: "{{ role_path }}/../../../k8s/argocd-image-updater-install.yaml"
+    state: present
+    namespace: argocd
 
 - name: Wait for ArgoCD server to be ready
-  shell: kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: argocd-server
+    namespace: argocd
+  register: argocd_server_deployment
+  until: "argocd_server_deployment.resources[0].status.availableReplicas is defined and argocd_server_deployment.resources[0].status.availableReplicas > 0"
+  retries: 30
+  delay: 10
 
-- name: Patch ArgoCD Server to LoadBalancer
-  shell: |
-    kubectl patch svc argocd-server -n argocd -p '{"metadata": {"annotations": {"service.beta.kubernetes.io/aws-load-balancer-type": "nlb"}}, "spec": {"type": "LoadBalancer"}}'
+- name: Create ArgoCD TLS Secret from template
+  template:
+    src: argocd-tls-secret.yaml.j2
+    dest: /tmp/argocd-tls-secret.yaml
 
-- name: Install python3-pip
-  apt:
-    name: python3-pip
+- name: Apply ArgoCD TLS Secret
+  kubernetes.core.k8s:
+    src: /tmp/argocd-tls-secret.yaml
     state: present
-    update_cache: yes
 
-- name: Install bcrypt
-  pip:
-    name: bcrypt
-    executable: pip3
+- name: Create ArgoCD Server Deployment with TLS from template
+  template:
+    src: argocd-server-deployment-tls.yaml.j2
+    dest: /tmp/argocd-server-deployment-tls.yaml
 
-- name: Generate bcrypt hash for password
-  shell: python3 -c 'import bcrypt; print(bcrypt.hashpw(b"Fl@menco17", bcrypt.gensalt()).decode("utf-8"))'
-  register: password_hash
+- name: Apply ArgoCD Server Deployment with TLS
+  kubernetes.core.k8s:
+    src: /tmp/argocd-server-deployment-tls.yaml
+    state: present
 
-- name: Update ArgoCD admin password
-  shell: |
-    kubectl -n argocd patch secret argocd-secret \
-      -p '{"stringData": { "admin.password": "{{ password_hash.stdout }}", "admin.passwordMtime": "'$(date +%FT%T%Z)'" }}'
+- name: Create ArgoCD Ingress Manifest from template
+  template:
+    src: argocd-ingress.yaml.j2
+    dest: /tmp/argocd-ingress.yaml
 
-- name: Delete Initial Admin Secret
-  shell: kubectl -n argocd delete secret argocd-initial-admin-secret --ignore-not-found
+- name: Apply ArgoCD Ingress
+  kubernetes.core.k8s:
+    src: /tmp/argocd-ingress.yaml
+    state: present
 
-- name: Create App of Apps Manifest
-  copy:
-    dest: /tmp/app-of-apps.yaml
-    content: |
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: app-of-apps
-        namespace: argocd
-      spec:
-        project: default
-        source:
-          repoURL: https://github.com/theenuka/pheonix-booking-config-repo.git
-          targetRevision: HEAD
-          path: app-of-apps
-        destination:
-          server: https://kubernetes.default.svc
-          namespace: argocd
-        syncPolicy:
-          automated:
-            prune: true
-            selfHeal: true
+- name: Create Root App Manifest from template
+  template:
+    src: root-app.yaml.j2
+    dest: /tmp/root-app.yaml
 
-- name: Apply App of Apps
-  shell: kubectl apply -f /tmp/app-of-apps.yaml
+- name: Apply Root App
+  kubernetes.core.k8s:
+    src: /tmp/root-app.yaml
+    state: present

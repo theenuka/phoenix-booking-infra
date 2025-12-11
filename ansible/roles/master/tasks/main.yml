@@ -21,14 +21,22 @@
     owner: ubuntu
     group: ubuntu
 
+- name: Copy Flannel manifest
+  copy:
+    src: ../../../k8s/kube-flannel.yml
+    dest: /tmp/kube-flannel.yml
+
 - name: Install Flannel Pod Network
   become: no
-  shell: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+  shell: kubectl apply -f /tmp/kube-flannel.yml
+  args:
+    creates: /var/run/flannel/subnet.env
 
 - name: Generate Join Command
   command: kubeadm token create --print-join-command
   register: join_command
 
-- name: Save Join Command to local file
-  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join_command.sh"
-  become: no
+- name: Store join command
+  add_host:
+    name: "join_command_holder"
+    join_command: "{{ join_command.stdout }}"

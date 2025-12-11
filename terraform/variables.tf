@@ -1,24 +1,15 @@
 variable "aws_region" {
-  description = "AWS region to deploy resources"
+  description = "AWS region"
   default     = "us-east-1"
 }
 
-variable "project_name" {
-  description = "Project name prefix for tags"
-  default     = "phoenix"
-}
-
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  default     = "10.0.0.0/16"
-}
-
-variable "subnet_cidr" {
-  description = "CIDR block for the public subnet"
-  default     = "10.0.1.0/24"
-}
-
 variable "admin_cidr" {
-  description = "CIDR block allowed to access SSH and K8s API (e.g., your home IP)"
-  default     = "0.0.0.0/0" # CHANGE THIS to your IP for security!
+  description = "CIDR block for admin access to the bastion host"
+  type        = string
+  default     = "10.0.0.0/16" # PLEASE CHANGE THIS TO YOUR IP ADDRESS
+
+  validation {
+    condition     = can(cidrnetmask(var.admin_cidr))
+    error_message = "Must be a valid CIDR block."
+  }
 }

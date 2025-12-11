@@ -1,16 +1,23 @@
 #!/bin/bash
 
+set -e  # Exit on error
+
 # Variables
-CLUSTER_NAME="phoenix-cluster" # Must match the tag in Terraform
+CLUSTER_NAME="phoenix-cluster"
 REGION="us-east-1"
-VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=phoenix-vpc" --query "Vpcs[0].VpcId" --output text)
+
+# Get VPC ID dynamically from Terraform
+echo "Fetching VPC ID from Terraform..."
+VPC_ID=$(cd ../terraform && terraform output -raw vpc_id 2>/dev/null || echo "")
 
 if [ -z "$VPC_ID" ]; then
-  echo "Error: Could not find VPC ID. Make sure Terraform has been applied."
-  exit 1
+    echo "❌ Error: Could not fetch VPC ID from Terraform"
+    echo "Please ensure Terraform is initialized and applied in ../terraform directory"
+    echo "Or set VPC_ID manually: export VPC_ID=vpc-xxxxx"
+    exit 1
 fi
 
-echo "Using VPC ID: $VPC_ID"
+echo "✅ Using VPC ID: $VPC_ID"
 
 # 1. Install Helm if not installed
 if ! command -v helm &> /dev/null; then

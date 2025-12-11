@@ -1,12 +1,6 @@
 # File: roles/workers/tasks/main.yml
-- name: Copy the join command to server
-  copy:
-    src: ./join_command.sh
-    dest: /tmp/join_command.sh
-    mode: 0777
-
 - name: Join the node to cluster
-  shell: sh /tmp/join_command.sh
+  shell: "{{ hostvars['join_command_holder']['join_command'] }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
   register: joined_or_not

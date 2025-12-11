@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: {{ argocd_config_repo_url }}
+    targetRevision: main
+    path: app-of-apps/platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: business-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: {{ argocd_config_repo_url }}
+    targetRevision: main
+    path: app-of-apps/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd

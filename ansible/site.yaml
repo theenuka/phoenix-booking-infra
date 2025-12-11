@@ -8,9 +8,13 @@
   become: yes
   roles:
     - master
-    - argocd
 
 - hosts: tag_Role_worker
   become: yes
   roles:
     - workers
+
+- hosts: tag_Role_master
+  become: yes
+  roles:
+    - argocd
