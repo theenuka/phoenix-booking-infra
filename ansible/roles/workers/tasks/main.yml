@@ -1,6 +1,0 @@
-# File: roles/workers/tasks/main.yml
-- name: Join the node to cluster
-  shell: "{{ hostvars['join_command_holder']['join_command'] }}"
-  args:
-    creates: /etc/kubernetes/kubelet.conf
-  register: joined_or_not
